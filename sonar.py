@@ -1,6 +1,6 @@
 from loud import Loud
 from distance import Distance
-from multiprocessing import Process
+from multiprocessing import Process, Manager
 import time
 from sensor import Sensor
 from math import sqrt
@@ -30,20 +30,23 @@ for test in sensors:
     print(dist0)
     print(type(dist0))
     time.sleep(0.1)
+
+def runLoud(ns):
+    beep=Loud(ns)
+    beep.run()
     
-dist=Distance(min(distance))
+manager = Manager()
+ns = manager.Namespace()
+ns.distance = min(distance) 
 
-def runLoud():
-    beep=Loud(dist)
-    beep.start()
+p=Process(target=runLoud, args=[ns])
+p.start()
 
-def runSonar(): 
+def runSonar(ns): 
     while True:
         for i in range(3):
             distance[i] = toInt(sensors[i].measure())
-            dist.setDistance(min(distance))
+            ns.distance=min(distance)
             time.sleep(0.1)
 
-runLoud()
-
-runSonar()
+runSonar(ns)
